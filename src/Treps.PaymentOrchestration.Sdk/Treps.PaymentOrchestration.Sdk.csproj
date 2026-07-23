@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
+
+    <PackageId>Treps.PaymentOrchestration.Sdk</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Treps Payment Orchestration Platform</Authors>
+    <Description>Official .NET SDK for the Treps Payment Orchestration Platform — Authentication, Financial Transactions, 3D Secure, Secure Payment Page (Hosted Page), Query Operations, Card Operations, Payment Links, and Insurance-sector Payments.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TrepsPaymentOrchestration/dotnet-sdk</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TrepsPaymentOrchestration/dotnet-sdk</RepositoryUrl>
+    <PackageTags>treps;payment;payment-orchestration;3d-secure;hosted-page;sdk</PackageTags>
+  </PropertyGroup>
+
+</Project>

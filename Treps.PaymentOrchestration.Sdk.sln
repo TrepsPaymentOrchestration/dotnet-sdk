@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C9B2A651-B58D-4C33-8379-020DABBF4544}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Treps.PaymentOrchestration.Sdk", "src\Treps.PaymentOrchestration.Sdk\Treps.PaymentOrchestration.Sdk.csproj", "{6DF57BD1-2617-4DA1-A9D2-D08804742C8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{267CA113-E241-469B-9DE1-5D052C0BB441}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Treps.PaymentOrchestration.Sdk.Tests", "tests\Treps.PaymentOrchestration.Sdk.Tests\Treps.PaymentOrchestration.Sdk.Tests.csproj", "{5F66DA99-6C5C-40B8-AC93-08D3728A6E48}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{C1A5AA99-3C1A-4CF4-9C51-03B6FB9EABEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Treps.PaymentOrchestration.Sdk.Examples", "examples\Treps.PaymentOrchestration.Sdk.Examples\Treps.PaymentOrchestration.Sdk.Examples.csproj", "{C4F8D5A9-68F6-46E3-A080-4EBE5C7E9A13}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6DF57BD1-2617-4DA1-A9D2-D08804742C8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DF57BD1-2617-4DA1-A9D2-D08804742C8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DF57BD1-2617-4DA1-A9D2-D08804742C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DF57BD1-2617-4DA1-A9D2-D08804742C8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F66DA99-6C5C-40B8-AC93-08D3728A6E48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F66DA99-6C5C-40B8-AC93-08D3728A6E48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F66DA99-6C5C-40B8-AC93-08D3728A6E48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F66DA99-6C5C-40B8-AC93-08D3728A6E48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4F8D5A9-68F6-46E3-A080-4EBE5C7E9A13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4F8D5A9-68F6-46E3-A080-4EBE5C7E9A13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4F8D5A9-68F6-46E3-A080-4EBE5C7E9A13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4F8D5A9-68F6-46E3-A080-4EBE5C7E9A13}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6DF57BD1-2617-4DA1-A9D2-D08804742C8D} = {C9B2A651-B58D-4C33-8379-020DABBF4544}
+		{5F66DA99-6C5C-40B8-AC93-08D3728A6E48} = {267CA113-E241-469B-9DE1-5D052C0BB441}
+		{C4F8D5A9-68F6-46E3-A080-4EBE5C7E9A13} = {C1A5AA99-3C1A-4CF4-9C51-03B6FB9EABEC}
+	EndGlobalSection
+EndGlobal
