@@ -10,8 +10,9 @@ namespace Treps.PaymentOrchestration.Sdk;
 /// <summary>
 /// Low-level HTTP client for the Treps Payment Orchestration API. Handles login and token
 /// caching; use the <see cref="Payments"/>, <see cref="ThreeDSecure"/>, <see cref="HostedPage"/>,
-/// <see cref="Query"/>, <see cref="Cards"/>, <see cref="PaymentLinks"/>, and
-/// <see cref="Insurance"/> resource properties built on top of it for an endpoint-specific API.
+/// <see cref="Query"/>, <see cref="Cards"/>, <see cref="PaymentLinks"/>, <see cref="Insurance"/>,
+/// <see cref="Marketplace"/>, and <see cref="DownloadJobs"/> resource properties built on top of
+/// it for an endpoint-specific API.
 /// </summary>
 public sealed class TrepsClient : IDisposable
 {
@@ -58,6 +59,12 @@ public sealed class TrepsClient : IDisposable
     /// <summary>Insurance-sector payments.</summary>
     public InsuranceResource Insurance { get; }
 
+    /// <summary>Marketplace / Split Payment: sub-merchants, order operations, and settlement reporting.</summary>
+    public MarketplaceResource Marketplace { get; }
+
+    /// <summary>Asynchronous report export jobs (search/download/cancel), used by <see cref="Marketplace"/>'s settlement export.</summary>
+    public DownloadJobResource DownloadJobs { get; }
+
     /// <param name="username">Your Treps portal username.</param>
     /// <param name="password">Your Treps portal password.</param>
     /// <param name="merchantId">Your Treps merchant id.</param>
@@ -94,6 +101,8 @@ public sealed class TrepsClient : IDisposable
         Cards = new CardResource(this);
         PaymentLinks = new PaymentLinkResource(this);
         Insurance = new InsuranceResource(this);
+        Marketplace = new MarketplaceResource(this);
+        DownloadJobs = new DownloadJobResource(this);
     }
 
     /// <summary>Performs POST /api/auth and returns the raw response — most callers don't need this directly.</summary>
@@ -139,6 +148,38 @@ public sealed class TrepsClient : IDisposable
         }
 
         return parsed.Data!;
+    }
+
+    /// <summary>
+    /// GET request with an automatically-attached bearer token whose response body is a raw file
+    /// rather than the usual <c>ApiResponse&lt;T&gt;</c> JSON envelope — used by
+    /// <see cref="Resources.DownloadJobResource.DownloadAsync"/>.
+    /// </summary>
+    public async Task<DownloadedFile> DownloadFileAsync(string path, CancellationToken cancellationToken = default)
+    {
+        var token = await EnsureLoggedInAsync(cancellationToken).ConfigureAwait(false);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, _baseUrl + path);
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.AccessToken);
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var parsed = TryDeserialize<ApiResponse<object>>(errorText);
+
+            throw new TrepsApiException(
+                parsed?.Message ?? $"Treps API request failed with HTTP {(int)response.StatusCode}",
+                (int)response.StatusCode,
+                parsed?.Errors,
+                parsed);
+        }
+
+        var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        var fileName = response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName;
+
+        return new DownloadedFile(bytes, response.Content.Headers.ContentType?.ToString(), fileName);
     }
 
     private async Task<(string AccessToken, long ExpiresAtMs)> EnsureLoggedInAsync(CancellationToken cancellationToken)

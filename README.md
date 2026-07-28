@@ -11,7 +11,9 @@ Transactions** (sale / pre-auth / post-auth / refund / void), **3D Secure**, the
 **Secure Payment Page** (Hosted Page) and its **embedded IFrame** variant, **Query
 Operations** (BIN lookup, transaction/order detail & reporting, commissions, installments,
 saved-card search), **Card Operations** (add / update / remove a tokenized card), **Payment
-Links**, and **Insurance-sector Payments**. See [Roadmap](#roadmap) for what's next.
+Links**, **Insurance-sector Payments**, and **Marketplace / Split Payments** (sub-merchants,
+order approve/pay/allocate/seize/refund/collect/cancel, settlement reporting, and async report
+export/download). See [Roadmap](#roadmap) for what's next.
 
 Full API reference: **[REPLACE ME: public docs site URL]** (Transaction Types, 3D Secure,
 Secure Payment Page, and Hash Verification pages).
@@ -311,6 +313,89 @@ refund" variant is in turn identical to its own regular refund entry, which look
 documentation copy/paste rather than an intentionally distinct contract), so nothing
 insurance-specific is duplicated here.
 
+## Marketplace / Split Payments
+
+Register sub-merchants, then approve/pay out (or seize/refund/collect against) their share of a
+split-payment order, and report on settlement balances.
+
+```csharp
+var subMerchant = await treps.Marketplace.SubMerchants.AddAsync(new SubMerchantAddRequest
+{
+    ReferenceId = "SUB-1001",
+    Name = "Example Sub-Merchant A.Ş.",
+    SolePropFlag = 1,
+    TaxOffice = "Kadıköy",
+    VknTckn = "1234567890",
+    Address = "Örnek Mah. Örnek Sk. No:1",
+    District = "Kadıköy",
+    ProvinceCode = "34",
+    CountryAlpha3 = "TUR",
+    Email = "submerchant@example.com",
+    Phone = "5551112233",
+    AccountingTransferMethod = 1, // IBAN
+    IbanOwnerName = "Example Sub-Merchant A.Ş.",
+    Iban = "TR000006701000000000000001",
+    ContactName = "Ayşe",
+    ContactSurname = "Yılmaz",
+    BlockedDayCount = 7,
+    Status = 1,
+});
+
+var found = await treps.Marketplace.SubMerchants.FindAsync(new SubMerchantFindRequest { Status = 1, Page = 1, PageSize = 10 });
+```
+
+A split-payment sale itself is a regular `treps.Payments.SaleAsync()` call with
+`SaleRequest.SubMerchants` populated (see [Models/Common.cs](./src/Treps.PaymentOrchestration.Sdk/Models/Common.cs)).
+Once such an order exists, approve and pay out each sub-merchant's share — `ApproveAsync` and
+`PayAsync` are **batch** endpoints; each posts a JSON array directly, not an object:
+
+```csharp
+await treps.Marketplace.Order.ApproveAsync(
+[
+    new OrderApproveItem { Oid = oid, SubMerchantReferenceId = "SUB-1001", PartialApprove = false, ApproveAmount = 100m },
+]);
+
+var allocateResult = await treps.Marketplace.Order.AllocatePayAsync(
+[
+    new OrderPayAllocateItem { SubMerchantReferenceId = "SUB-1001", Amount = 100m, PaymentReferenceCodes = ["PAYOUT-REF-1"] },
+]);
+```
+
+> **`AllocatePayAsync` is atomic.** If `allocateResult.Success` is `false`, **nothing** in the
+> batch was actually applied — the whole thing is rolled back — even if some individual
+> `allocateResult.Items[i].Success` values are `true`. A row only really succeeded when both its
+> own item-level `Success` AND the top-level `Success` are `true`.
+
+Other order operations (`SeizedAsync`, `RefundAsync`, `CollectDebtAsync`, `CancelAsync`) take a
+single object, not a batch array. Note `treps.Marketplace.Order.RefundAsync()` (order-level,
+per sub-merchant) is distinct from `treps.Payments.RefundAsync()` (the top-level payment refund,
+which can itself carry a `SubMerchants` allocation list — see [Error handling](#error-handling) below
+and `RefundRequest.SubMerchants` in code).
+
+Settlement reporting, and an async export/download flow for larger reports:
+
+```csharp
+var summary = await treps.Marketplace.Settlement.SummaryAsync(new SettlementSummaryRequest { SubMerchantReferenceIds = ["SUB-1001"] });
+var detail = await treps.Marketplace.Settlement.DetailAsync(new SettlementDetailRequest { SubMerchantReferenceIds = ["SUB-1001"], StatusFilter = 2 /* Unpaid */ });
+
+await treps.Marketplace.Settlement.SummaryExportAsync(new SettlementSummaryExportRequest
+{
+    ReportName = "settlement-export",
+    Filter = new SettlementSummaryExportFilter { SubMerchantReferenceIds = ["SUB-1001"] },
+});
+
+var jobs = await treps.DownloadJobs.SearchAsync(new DownloadJobSearchRequest { ReportType = 1 /* SubMerchantSettlement */, JobStatus = 2 /* Completed */ });
+if (jobs.Items.Count > 0)
+{
+    var file = await treps.DownloadJobs.DownloadAsync(jobs.Items[0].Id); // raw bytes, not the ApiResponse<T> envelope
+}
+```
+
+Finally, `treps.Marketplace.ConfigAsync(new MarketplaceConfigRequest { PaymentTransferApproveRequired = 1 })`
+sets the platform-wide "require manual approval before transfer" setting. **This is write-only**
+— there is no GET/read endpoint for it on the backend as of this writing, so there's no way to
+fetch the current value back.
+
 ## Error handling
 
 Any failed request (non-2xx HTTP, or a 2xx response with `status: false`) throws
@@ -348,6 +433,7 @@ Runnable, self-contained demos under [`examples/`](./examples), dispatched by na
 | `card` | Add, update, search, and remove a saved card |
 | `payment-link` | Create a payment link, query its status, and list links |
 | `insurance` | An insurance-sector payment, then refunding it via the regular refund endpoint |
+| `marketplace` | Registering a sub-merchant, approving/allocating a split-payment order, settlement summary, and the async export/download job flow |
 
 ```bash
 TREPS_USERNAME=... TREPS_PASSWORD=... TREPS_MERCHANT_ID=... dotnet run --project examples -- quickstart

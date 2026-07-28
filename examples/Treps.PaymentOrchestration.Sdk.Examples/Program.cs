@@ -12,8 +12,9 @@ Task task = demo switch
     "card" => CardExample.RunAsync(),
     "payment-link" => PaymentLinkExample.RunAsync(),
     "insurance" => InsuranceExample.RunAsync(),
+    "marketplace" => MarketplaceExample.RunAsync(),
     _ => throw new ArgumentException(
-        $"Unknown demo \"{demo}\". Choose one of: quickstart, three-d-secure, hosted-page, iframe, query, card, payment-link, insurance."),
+        $"Unknown demo \"{demo}\". Choose one of: quickstart, three-d-secure, hosted-page, iframe, query, card, payment-link, insurance, marketplace."),
 };
 
 await task;

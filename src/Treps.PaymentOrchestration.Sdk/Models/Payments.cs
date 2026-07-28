@@ -38,6 +38,24 @@ public record PostAuthRequest
     public required string ClientIp { get; init; }
 }
 
+/// <summary>
+/// Per-sub-merchant refund allocation for a Marketplace (split-payment) order, used by
+/// <see cref="RefundRequest.SubMerchants"/> and <see cref="VoidRequest.SubMerchants"/>.
+///
+/// <para><b>Naming note:</b> the wire field really is <c>reference_id</c> here — not
+/// <c>sub_merchant_reference_id</c> like every marketplace settlement/order response uses for
+/// the same concept. This asymmetry is on the backend's request side, confirmed against the
+/// live contract, not a typo in this SDK.</para>
+/// </summary>
+public record RefundSubMerchantAllocation
+{
+    [JsonPropertyName("reference_id")]
+    public required string ReferenceId { get; init; }
+
+    [JsonPropertyName("refund_amount")]
+    public required decimal RefundAmount { get; init; }
+}
+
 /// <summary>POST /api/payment/refund</summary>
 public record RefundRequest
 {
@@ -61,6 +79,14 @@ public record RefundRequest
 
     [JsonPropertyName("clientIp")]
     public required string ClientIp { get; init; }
+
+    /// <summary>
+    /// Marketplace (split-payment) orders only — how the refund is allocated across
+    /// sub-merchants. Omit to refund the full amount as a single, non-split transaction. See
+    /// <see cref="RefundSubMerchantAllocation"/> for a field-naming caveat.
+    /// </summary>
+    [JsonPropertyName("sub_merchants")]
+    public List<RefundSubMerchantAllocation>? SubMerchants { get; init; }
 }
 
 /// <summary>POST /api/payment/void</summary>
@@ -82,6 +108,14 @@ public record VoidRequest
 
     [JsonPropertyName("clientIp")]
     public required string ClientIp { get; init; }
+
+    /// <summary>
+    /// Marketplace (split-payment) orders only — how the voided refund is allocated across
+    /// sub-merchants. Omit to void the full amount as a single, non-split transaction. See
+    /// <see cref="RefundSubMerchantAllocation"/> for a field-naming caveat.
+    /// </summary>
+    [JsonPropertyName("sub_merchants")]
+    public List<RefundSubMerchantAllocation>? SubMerchants { get; init; }
 }
 
 public record PostAuthResponseData
