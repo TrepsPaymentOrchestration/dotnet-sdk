@@ -370,7 +370,13 @@ Other order operations (`SeizedAsync`, `RefundAsync`, `CollectDebtAsync`, `Cance
 single object, not a batch array. Note `treps.Marketplace.Order.RefundAsync()` (order-level,
 per sub-merchant) is distinct from `treps.Payments.RefundAsync()` (the top-level payment refund,
 which can itself carry a `SubMerchants` allocation list — see [Error handling](#error-handling) below
-and `RefundRequest.SubMerchants` in code).
+and `RefundRequest.SubMerchants` in code). The same distinction applies to
+`treps.Marketplace.Order.CancelAsync()` versus `treps.Payments.VoidAsync()` (with its own
+`SubMerchants` allocation list). Both order-level methods are valid, documented endpoints, but
+the reference frontend (MerchantPanel) does not use them for its actual refund/cancel flows — it
+refunds and voids marketplace orders exclusively through `Payments.RefundAsync()` /
+`Payments.VoidAsync()` with a `SubMerchants` allocation. Prefer that path unless you specifically
+need order-level, per-sub-merchant refund/cancel semantics.
 
 Settlement reporting, and an async export/download flow for larger reports:
 
