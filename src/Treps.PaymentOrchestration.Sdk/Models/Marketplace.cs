@@ -241,9 +241,53 @@ public record SubMerchantFindRequest
     [JsonPropertyName("name")]
     public string? Name { get; init; }
 
+    [JsonPropertyName("commercial_name")]
+    public string? CommercialName { get; init; }
+
+    /// <summary>Company type enum (see the docs site for the full table).</summary>
+    [JsonPropertyName("sole_prop_flag")]
+    public int? SolePropFlag { get; init; }
+
     [JsonPropertyName("vkn_tckn")]
     public string? VknTckn { get; init; }
 
+    [JsonPropertyName("tax_office")]
+    public string? TaxOffice { get; init; }
+
+    [JsonPropertyName("district")]
+    public string? District { get; init; }
+
+    [JsonPropertyName("province_code")]
+    public string? ProvinceCode { get; init; }
+
+    /// <summary>ISO 3166-1 alpha-3, e.g. "TUR".</summary>
+    [JsonPropertyName("country_alpha3")]
+    public string? CountryAlpha3 { get; init; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; init; }
+
+    [JsonPropertyName("phone")]
+    public string? Phone { get; init; }
+
+    /// <summary>How settlement funds are transferred to the sub-merchant, e.g. 1 = IBAN.</summary>
+    [JsonPropertyName("accounting_transfer_method")]
+    public int? AccountingTransferMethod { get; init; }
+
+    [JsonPropertyName("iban_owner_name")]
+    public string? IbanOwnerName { get; init; }
+
+    [JsonPropertyName("iban")]
+    public string? Iban { get; init; }
+
+    [JsonPropertyName("wallet_account_code")]
+    public string? WalletAccountCode { get; init; }
+
+    /// <summary>
+    /// 1 = active, 0 = passive. Not reliably honored server-side as a filter, so MerchantPanel
+    /// (the reference frontend) stopped sending it and filters active/inactive client-side
+    /// instead. Left here for completeness/forward-compat.
+    /// </summary>
     [JsonPropertyName("status")]
     public int? Status { get; init; }
 
