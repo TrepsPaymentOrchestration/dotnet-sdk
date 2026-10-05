@@ -10,7 +10,7 @@ namespace Treps.PaymentOrchestration.Sdk;
 /// <remarks>
 /// Algorithm (must match byte-for-byte, ported from the documented reference implementation):
 /// 1. Drop <c>hash</c>, <c>encoding</c>, <c>countdown</c>, and any field with an empty value.
-/// 2. Sort the remaining keys alphabetically, case-insensitive.
+/// 2. Sort the remaining keys by their lowercased name using ordinal (char code) comparison.
 /// 3. Escape each value: <c>\</c> -&gt; <c>\\</c>, <c>|</c> -&gt; <c>\|</c> (same escaping applied to the secret key).
 /// 4. Join the escaped values with <c>|</c>, then append the escaped secret key.
 /// 5. SHA-512 the resulting string and Base64-encode the digest.
@@ -51,7 +51,9 @@ public static class Hash
         var sortedKeys = payload.Keys
             .Where(key => !AlwaysExcluded.Contains(key))
             .Where(key => payload[key] is not null && payload[key] as string != string.Empty)
-            .OrderBy(key => key, StringComparer.OrdinalIgnoreCase)
+            // Lowercase first, then ordinal — matches the server. OrdinalIgnoreCase is NOT equivalent:
+            // it compares upper-cased chars, so '_' (0x5F) sorts after letters instead of before them.
+            .OrderBy(key => key.ToLowerInvariant(), StringComparer.Ordinal)
             .ToList();
 
         var hashInput = string.Join('|', sortedKeys.Select(key => EscapeHashValue(payload[key])))
